@@ -13,27 +13,13 @@
         @touchend="handleTouchEnd"
         @touchmove="handleTouchMove"
       />
-      <div class="filter">
-        <input-range
-          :step="8"
-          :max="images.length"
-          :value="spinner.current"
-          @input="handleSlider"
-          :min="1"
-        ></input-range>
-      </div>
-      <!-- <input
-        type="range"
-        tabindex="1"
-        min="1"
-        :max="spinner.size"
+      <input-range
+        :step="10"
+        :max="images.length"
         :value="spinner.current"
-        class="vue-product-spinner-slider"
-        :class="sliderClass"
-        @input="handleSlider"
-        @change="handleChange"
-        v-if="slider"
-      /> -->
+        @input="handleChange"
+        :min="1"
+      ></input-range>
     </template>
     <slot v-else>Loading images...</slot>
   </picture>
@@ -105,6 +91,10 @@ export default {
       },
       animationRequestID: 0,
       lastPosition: 0,
+      newImageIndex: 0,
+      interval: null,
+      diff: 0
+      
     };
   },
   components: {
@@ -116,12 +106,6 @@ export default {
       this.handlePreload();
       this.initSpinner();
     },
-    // 'spinner.current'(newval, oldval){
-    //   if (newval>oldval) {
-
-    //     this.spinner.current=this.oldval-8
-    //   }
-    // }
   },
   created() {
     this.initSpinner();
@@ -159,9 +143,7 @@ export default {
         this.spinner.currentPath = this.images[0];
       }
     },
-    // handler(){
-    //     this.handleSlider();
-    // },
+
     handlePreload() {
       PreloadImages(this.images).then(() => (this.imagesPreloaded = true));
     },
@@ -182,15 +164,27 @@ export default {
       }
     },
     handleSlider(val) {
-      console.log(val);
-      // this.spinner.current = Number(val);
       this.spinner.current = Number(val);
 
       this.spinner.currentPath = this.images[val - 1];
-      // console.log(event.target.value);
     },
-    handleChange() {
-      // console.log(event.target.value);
+    handleChange(val) {
+      
+      this.newImageIndex = val;
+      
+      let change = this.newImageIndex > this.spinner.current;
+      
+      let interval = setInterval(() => {
+       
+        if (change) {
+          this.handleSlider(this.spinner.current + 1, );
+        }else{
+          this.handleSlider(this.spinner.current - 1  );
+        }        
+      }, 15);
+      setTimeout(() =>{
+        clearInterval(interval)
+      }, (Math.abs(this.spinner.current-this.newImageIndex ))*15)
     },
     handleMouseDown() {
       if (this.animation) {
@@ -286,18 +280,4 @@ export default {
 </script>
 
 <style lang="scss">
-.filter {
-  background: hsla(0, 0%, 100%, 0.1);
-  -webkit-backdrop-filter: blur(50px);
-  backdrop-filter: blur(50px);
-  width: auto;
-  height: 64px;
-  position: absolute;
-  bottom: 20px;
-  left: calc(50% - 645px);
-  display: flex;
-  flex-direction: row;
-  padding: 32px 44px;
-  border-radius: 15px;
-}
 </style>
